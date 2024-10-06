@@ -9,10 +9,11 @@ fileList = ['etc/caddy',
             'etc/openclash',
             'etc/samba',
             'etc/ssh',
-            'etc/xray',
+            'etc/ppp',
 
             'etc/netdata/netdata.conf',
             'etc/adguardhome.yaml',
+            'etc/shadow',
             'etc/init.d/caddy'
             ]
 
@@ -21,10 +22,17 @@ def extractTar(file):
     with tarfile.open(file, 'r:gz') as tar:
         tar.extractall()
 
+
 # 移除除了文件列表中指定的文件和目录之外的文件
 def removeFilesExcept(fileList, directory):
     for root, dirs, files in os.walk(directory, topdown=False):
-        if root in fileList:
+        skipRoot = False
+        for filePath in fileList:           
+            if root == filePath or root.startswith(filePath):
+                skipRoot = True
+                break
+
+        if skipRoot:
             continue
 
         files_to_remove = [file for file in files if os.path.join(root, file) not in fileList]
@@ -38,8 +46,6 @@ def removeFilesExcept(fileList, directory):
             dirPath = os.path.join(root, dir)
             if not os.listdir(dirPath):
                 os.rmdir(dirPath)
-
-
 
 # 设置命令行参数
 parser = argparse.ArgumentParser(description='Extract and clean files from a tar archive')
